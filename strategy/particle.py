@@ -1,12 +1,11 @@
-import random
-import numpy as np
-import cv2
 from model.test_tf import *
 from laserBeam.super_simulation import *
 import keras.backend as bk
-from laserBeam.theta import *
+from laserBeam.theta_constraint import *
 import copy
-from utils import write_log
+from util.utils import write_log
+import matplotlib.pyplot as plt
+import numpy as np
 
 threshold = 0.05
 
@@ -26,18 +25,12 @@ class Particle:
             self.velocity[i] *= inertia_weight
         theta1 = (self.best_theta - self.theta) * cognitive_weight
         theta2 = (global_best_theta - self.theta) * social_weight
-        self.velocity[0] += random.uniform(0, 1) * theta1.phi + random.uniform(0, 1) * theta2.phi
         self.velocity[1] += random.uniform(0, 1) * theta1.l + random.uniform(0, 1) * theta2.l
         self.velocity[2] += random.uniform(0, 1) * theta1.b + random.uniform(0, 1) * theta2.b
-        self.velocity[3] += random.uniform(0, 1) * theta1.w + random.uniform(0, 1) * theta2.w
-        self.velocity[4] += random.uniform(0, 1) * theta1.alpha + random.uniform(0, 1) * theta2.alpha
 
     def update_theta(self):
-        self.theta.phi += self.velocity[0]
         self.theta.l += self.velocity[1]
         self.theta.b += self.velocity[2]
-        self.theta.w += self.velocity[3]
-        self.theta.alpha += self.velocity[4]
         self.theta.clip(self.image)
 
 
@@ -66,11 +59,8 @@ class ParticleSwarmOptimization:
         # 对每一列进行归一化，得到最终的拉丁超立方采样样本
         samples = [[initial_matrix[i][j] for i in range(dimension)] for j in range(num_samples)]
         for sample in samples:
-            sample[0] = 380 + (750 - 380) * sample[0]
             sample[1] = -math.pi / 2 + math.pi * sample[1]
             sample[2] = self.image.size[1] * sample[2]
-            sample[3] = 1 + 10 * sample[3]
-            sample[4] = sample[4]
         return samples
 
     def initialize_particles(self):
@@ -85,15 +75,22 @@ class ParticleSwarmOptimization:
         global_best_theta = None
         for particle in self.particles:
             argmax, fitness, conf_sec = self.evaluate_fitness(particle.theta)
-            particle.argmax = argmax
-            particle.conf = fitness
-            particle.conf_sec = conf_sec
+            if argmax == self.label and fitness < particle.conf:
+                particle.best_theta = copy.copy(particle.theta)
+                particle.conf = fitness
+                particle.argmax = argmax
+                particle.conf_sec = conf_sec
+            elif argmax != self.label:
+                particle.best_theta = copy.copy(particle.theta)
+                particle.conf = fitness
+                particle.argmax = argmax
+                particle.conf_sec = conf_sec
             if argmax == self.label and fitness < global_best_fitness:
                 global_best_fitness = fitness
                 global_best_theta = copy.copy(particle.theta)
         print('[adv最低分数] conf:%f' % global_best_fitness)
 
-        return global_best_theta
+        return global_best_theta, global_best_fitness
 
     def evaluate_fitness(self, theta):
         image_new = makeLB(theta, self.image)
@@ -105,7 +102,7 @@ class ParticleSwarmOptimization:
 
     def optimize(self):
         self.initialize_particles()
-        global_best_theta = self.update_global_best()
+        global_best_theta = self.update_global_best()[0]
 
         for _ in range(self.max_iterations):
             for particle in self.particles:
@@ -125,25 +122,56 @@ class ParticleSwarmOptimization:
                 particle.update_theta()
                 if self.atk_times % 100 == 0:
                     bk.clear_session()
-            global_best_theta = self.update_global_best()
-            # result_image = makeLB(global_best_theta, self.image)
-            # argmax, conf = get_conf(result_image)[0]
-            # if argmax != self.label and conf > self.conf + threshold:
-            #     bk.clear_session()
-            #     print("[advLB] 标签%s被攻击为%s" % (self.label, argmax))
-            #     print("[advLB] 参数 波长:%f 位置:(%f %f) 宽度:%f 强度:%f" % (global_best_theta.phi, global_best_theta.l,
-            #                                                        global_best_theta.b, global_best_theta.w,
-            #                                                        global_best_theta.alpha))
-            #     saveFile = 'adv/' + str(self.label) + '--' + str(argmax) + '--' + str(conf) + '.jpg'
-            #     # cv2.imwrite(saveFile, np.array(result_image))
-            #     result_image.save(saveFile)
-            #     write_log(self.label, argmax, global_best_theta, self.conf, conf, self.atk_times)
-            #     return global_best_theta
+            global_best_theta = self.update_global_best()[0]
         print("[advLB] 未找到攻击样本")
         saveFile = 'adv/' + str(self.label) + '--' + str(self.conf) + '.jpg'
         self.image.save(saveFile)
         theta = None
         return theta, self.atk_times
+
+    def optimize_analyze(self):
+        self.initialize_particles()
+        fitness_lst = []
+        global_best_theta, global_best_fitness = self.update_global_best()
+        fitness_lst.append(global_best_fitness)
+        for _ in range(self.max_iterations):
+            print('第%d次迭代=================================================' % _)
+            for particle in self.particles:
+                particle.update_velocity(global_best_theta, self.inertia_weight, self.cognitive_weight,
+                                         self.social_weight)
+                particle.update_theta()
+                if self.atk_times % 100 == 0:
+                    bk.clear_session()
+            global_best_theta, global_best_fitness = self.update_global_best()
+            fitness_lst.append(global_best_fitness)
+        # 生成一些示例数据
+        x = np.linspace(1, self.max_iterations, len(fitness_lst))
+        print(x)
+        print(len(x))
+        y = np.array(fitness_lst)
+
+        # 设置图形的大小和分辨率（可选）
+        plt.figure(figsize=(8, 6), dpi=80)
+
+        # 绘制折线图
+        plt.plot(x, y, color='blue', linewidth=2, label='fitness')
+
+        # 设置图形标题和轴标签
+        plt.title('PSO')
+        plt.xlabel('X Axis')
+        plt.ylabel('Y Axis')
+
+        plt.grid(True, linestyle='--', alpha=0.7)
+
+        # 添加图例
+        plt.legend()
+
+        # 保存图形（可选）
+        plt.savefig('sin_function.png')
+
+        # 显示图形
+        plt.show()
+        return global_best_theta, self.atk_times
 
 
 def advLB(image, inertia_weight, num_particles, max_iterations):
@@ -156,5 +184,19 @@ def advLB(image, inertia_weight, num_particles, max_iterations):
     pso = ParticleSwarmOptimization(image, num_particles, inertia_weight, cognitive_weight,
                                     social_weight, max_iterations)
     best_theta, atk_times = pso.optimize()
+
+    return best_theta, atk_times
+
+
+def advLB_analyze(image, inertia_weight, num_particles, max_iterations):
+    num_particles = 30
+    inertia_weight = 0.9
+    cognitive_weight = 1.6
+    social_weight = 1.8
+    max_iterations = 60
+
+    pso = ParticleSwarmOptimization(image, num_particles, inertia_weight, cognitive_weight,
+                                    social_weight, max_iterations)
+    best_theta, atk_times = pso.optimize_analyze()
 
     return best_theta, atk_times

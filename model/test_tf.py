@@ -4,13 +4,15 @@
 """
 import tensorflow as tf
 from tensorflow.keras.applications.resnet50 import ResNet50
+from tensorflow.keras.applications.mobilenet_v2 import MobileNetV2, preprocess_input, decode_predictions
 from tensorflow.keras.preprocessing import image
-from tensorflow.keras.applications.resnet50 import preprocess_input, decode_predictions
+# from tensorflow.keras.applications.resnet50 import preprocess_input, decode_predictions
 import numpy as np
 from PIL import Image
 
 # 加载预训练的 ResNet-50 模型
-model = ResNet50(weights='imagenet')
+# model = ResNet50(weights='imagenet')
+model = MobileNetV2(weights='imagenet')
 
 
 # def model_load():

@@ -2,7 +2,7 @@ import time
 import cv2
 from PIL import Image
 from model.test_tf import *
-
+from strategy.particle import advLB
 # IP Webcam的视频流地址
 url = "http://192.168.50.188:8080//video"
 
@@ -26,6 +26,7 @@ threshold = 100  # 根据实际情况调整阈值
 def calculate(image1, image2):
     # 灰度直方图算法
     # 计算单通道的直方图的相似值
+
     hist1 = cv2.calcHist([image1], [0], None, [256], [0.0, 255.0])
     hist2 = cv2.calcHist([image2], [0], None, [256], [0.0, 255.0])
     # 计算直方图的重合度
@@ -52,6 +53,42 @@ def classify_hist_with_split(image1, image2, size=(256, 256)):
         sub_data += calculate(im1, im2)
     sub_data = sub_data / 3
     return sub_data
+
+# ======================================================================================================================
+import tkinter as tk
+from PIL import Image, ImageTk
+
+def adv(img):
+    img = img.resize((400, 300), Image.ANTIALIAS)
+    photo = ImageTk.PhotoImage(img)
+    image_label.configure(image=photo)
+    image_label.image = photo
+
+# 创建主窗口
+root = tk.Tk()
+root.title("camera")
+
+# 创建图像框
+image_label = tk.Label(root, width=400, height=300, borderwidth=2, relief="solid")
+image_label.pack(pady=20)
+
+# 创建按钮1
+button1 = tk.Button(root, text="计算", command=lambda: adv())
+button1.pack(side=tk.LEFT, padx=10)
+
+# 创建按钮2
+button2 = tk.Button(root, text="重置", command=lambda: change_image("image2.jpg"))
+button2.pack(side=tk.LEFT, padx=10)
+# 显示默认图像
+default_image = Image.open("sin_function.png")
+default_image = default_image.resize((600, 450), Image.ANTIALIAS)
+default_photo = ImageTk.PhotoImage(default_image)
+image_label.configure(image=default_photo)
+image_label.image = default_photo
+
+# 运行主循环
+root.mainloop()
+# ======================================================================================================================
 while True:
     # 读取视频帧
     ret, frame = cap.read()
@@ -62,9 +99,10 @@ while True:
         break
 
     # 在窗口中显示视频帧
-    cv2.imshow("Camera Stream", frame)
+
 
     if time.time() - start_time >= 1:
+        cv2.imshow("Camera Stream", frame)
         # 加载两个待比较的图片
         # img为之前使用cv2读取的图片数据
         img = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))

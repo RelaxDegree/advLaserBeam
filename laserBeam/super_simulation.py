@@ -1,18 +1,13 @@
-from scipy import ndimage
 import numpy as np
-import matplotlib.pyplot as plt
 import math
 from PIL import Image
-import os
-import argparse
 import cv2
-from utils import *
+from util.utils import *
 # from theta import Vector
 root = '../valdata/'
 
 
 def simple_add(base_img, light_pattern, alpha=1.0):
-
     light_pattern = light_pattern.astype(np.float32)
     resized_light_pattern = cv2.resize(light_pattern, (base_img.shape[1], base_img.shape[0]))
     c = cv2.addWeighted(base_img, 1.0, resized_light_pattern, alpha * 2, 0)
@@ -31,7 +26,6 @@ def gaussian_add(base_img, light_pattern, eps=128):
 
 
 def tube_light_generation_by_func(k, b, alpha, beta, wavelength, w=400, h=400):
-    tube_light = np.zeros((h, w, 3))
     full_light_end_y = int(math.sqrt(beta) + 0.5)
     light_end_y = int(math.sqrt(beta * 20) + 0.5)
     c = wavelength_to_rgb(wavelength)
@@ -59,6 +53,9 @@ def tube_light_generation_by_func(k, b, alpha, beta, wavelength, w=400, h=400):
 
     # Attenuation condition
     attenuation_mask = (full_light_end_y < distances) & (distances <= light_end_y)
+    # if distances == 0:
+    #     attenuation = 1
+    # else:
     attenuation = beta / (distances * distances)
     tube_light[attenuation_mask, 0] = c0 * attenuation[attenuation_mask]
     tube_light[attenuation_mask, 1] = c1 * attenuation[attenuation_mask]

@@ -86,6 +86,7 @@ def wavelength_to_rgb(wavelength, gamma=0.8):
         R = 0.0
         G = 0.0
         B = 0.0
+
     return (R, G, B)
 
 def pc_toast(text):

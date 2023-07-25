@@ -3,13 +3,8 @@
     input a theta and an image, output a new image with laser beam
 """
 import math
-import random
-import time
-import aggdraw
 from PIL import Image, ImageDraw, ImageFilter
-from utils import *
-import cv2
-import numpy as np
+from util.utils import *
 
 root = '../valdata/'
 

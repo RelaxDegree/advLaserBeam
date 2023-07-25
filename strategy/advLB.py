@@ -4,17 +4,18 @@
     input : image, phi, l, b, w, alpha, size, classifier f, tmax
     output : vector of arg
 """
-import csv
 from model.test_tf import get_conf
 from model.test_tf import get_y_conf
 from laserBeam.super_simulation import *
 import numpy as np
 import keras.backend as bk
-from laserBeam.theta import *
-from utils import write_log
+from laserBeam.theta_constraint import *
+from util.utils import write_log
+
 image_root = 'valdata/'
 log_root = 'log.csv'
 threshold = 0.0
+
 
 def advLB(image, S, tmax=500, k=200):
     label, conf_ = get_conf(image)[0]  # conf* <- fy(x)
@@ -66,7 +67,7 @@ def advLB(image, S, tmax=500, k=200):
                 write_log(label, argmax, theta, conf_before, conf, times)
                 saveFile = 'adv/' + str(label) + '--' + str(argmax) + '--' + str(conf) + '.jpg'
                 print("[advLB] 参数 波长:%f 位置:(%f %f) 宽度:%f 强度:%f" % (theta.phi, theta.l, theta.b, theta.w, theta.alpha))
-                cv2.imwrite(saveFile, np.array(res_image))
+                res_image.save(saveFile)
                 bk.clear_session()
                 return theta, times  # return theta
 

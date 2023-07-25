@@ -21,8 +21,8 @@ def pc_toast():
     while toaster.notification_active():
         time.sleep(0.001)
 
+
 # for i in range(100):
-img = Image.open( path)
+img = Image.open(path)
 print(get_conf(img))
 theta, atk_times = advLB(img, 40, 20, 100)
-

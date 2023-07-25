@@ -1,10 +1,8 @@
 import math
-import random
-import time
-from PIL import Image, ImageDraw, ImageFilter
+from PIL import Image
 import PIL
 from theta import Vector
-from utils import *
+from util.utils import *
 import cv2
 import numpy as np
 root = '../valdata/'
