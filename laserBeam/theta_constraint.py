@@ -4,8 +4,8 @@ import random
 from PIL import Image
 import PIL
 
-phi = 420
-w = 16
+phi = 445
+w = 26
 alpha = 0.7
 
 

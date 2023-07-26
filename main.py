@@ -13,10 +13,10 @@ from laserBeam.theta_constraint import set_laser
 img = None
 
 
-def show_image_window(image):
+def show_image_window(image, text):
     # 创建新的Toplevel窗口
     image_window = tk.Toplevel(root)
-    image_window.title("攻击后的图片")
+    image_window.title(text)
     # 显示图片
     image_label = tk.Label(image_window)
     image_label.pack()
@@ -33,7 +33,7 @@ def adv():
         print('攻击失败')
         return
     img_new = makeLB(theta, img)
-    show_image_window(img_new)
+    show_image_window(img_new, "攻击后图片")
     # img.show()
     # photo = ImageTk.PhotoImage(image=img_new)
     # video_label.configure(image=photo)
@@ -42,7 +42,7 @@ def adv():
 
 def val():
     print(get_conf(img))
-
+    show_image_window(img,"测试图片")
 
 def reset():
     global cap
