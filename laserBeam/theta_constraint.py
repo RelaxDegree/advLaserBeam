@@ -5,8 +5,16 @@ from PIL import Image
 import PIL
 
 phi = 420
-w = 10
+w = 16
 alpha = 0.7
+
+
+def set_laser(phi_, w_, alpha_):
+    global phi, w, alpha
+    phi = phi_
+    w = w_
+    alpha = alpha_
+
 
 class Vector:
     def __init__(self, *args):
@@ -42,7 +50,7 @@ class Vector:
     #     self.alpha = alpha
     def __add__(self, other):
         try:
-            return Vector(self.phi,self.l + other.l, self.b + other.b, self.w ,self.alpha)
+            return Vector(self.phi, self.l + other.l, self.b + other.b, self.w, self.alpha)
         except:
             self.print()
             other.print()
@@ -51,14 +59,14 @@ class Vector:
 
     def __sub__(self, other):
         try:
-            return Vector(self.phi,self.l - other.l, self.b - other.b, self.w,
+            return Vector(self.phi, self.l - other.l, self.b - other.b, self.w,
                           self.alpha)
         except:
             self.print()
             other.print()
 
     def __mul__(self, size):
-        return Vector(self.phi,self.l * size, self.b * size, self.w, self.alpha)
+        return Vector(self.phi, self.l * size, self.b * size, self.w, self.alpha)
 
     def clip(self, image):
         image_height, image_width = image.size[0], image.size[1]
@@ -100,6 +108,5 @@ class Vector:
 
 # basic
 Q = [
-     [0, 0.01, 0, 0, 0],  # l
-     [0, 0, 1, 0, 0]]   # b
-
+    [0, 0.01, 0, 0, 0],  # l
+    [0, 0, 1, 0, 0]]  # b

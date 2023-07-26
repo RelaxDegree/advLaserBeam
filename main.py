@@ -2,13 +2,28 @@ import tkinter as tk
 from tkinter import PhotoImage
 import cv2
 from PIL import Image, ImageTk
+from tkinter import messagebox
 import time
 from model.test_tf import get_conf
 from strategy.particle import advLB
 from util.utils import pc_toast
 from laserBeam.super_simulation import *
+from laserBeam.theta_constraint import set_laser
 
 img = None
+
+
+def show_image_window(image):
+    # 创建新的Toplevel窗口
+    image_window = tk.Toplevel(root)
+    image_window.title("攻击后的图片")
+    # 显示图片
+    image_label = tk.Label(image_window)
+    image_label.pack()
+    photo = ImageTk.PhotoImage(image=image)
+    image_label.configure(image=photo)
+    image_label.image = photo
+
 
 def adv():
     global img
@@ -18,17 +33,20 @@ def adv():
         print('攻击失败')
         return
     img_new = makeLB(theta, img)
-    img_new.save('test.jpg')
-    img = img_new
-    photo = ImageTk.PhotoImage(image=img_new)
-    video_label.configure(image=photo)
-    video_label.image = photo
+    show_image_window(img_new)
+    # img.show()
+    # photo = ImageTk.PhotoImage(image=img_new)
+    # video_label.configure(image=photo)
+    # video_label.image = photo
+
 
 def val():
     print(get_conf(img))
 
 
 def reset():
+    global cap
+    cap = cv2.VideoCapture(url)
     update_frame()
 
 
@@ -39,12 +57,19 @@ def update_frame():
         return
     global img
     img = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
-    img = img.resize((960, 540), Image.ANTIALIAS)
+    img = img.resize((1152, 648), Image.ANTIALIAS)
     photo = ImageTk.PhotoImage(image=img)
     video_label.configure(image=photo)
     video_label.image = photo
     timer_id = root.after(10, update_frame)  # 每隔10毫秒更新画面
     update_frame.timer_id = timer_id
+
+
+def update_setting():
+    if phi_entry.get() == '' or width_entry.get() == '' or alpha_entry.get() == '':
+        messagebox.showwarning("警告", "请输入参数")
+        return
+    set_laser(phi_entry.get(), width_entry.get(), alpha_entry.get())
 
 
 url = "http://192.168.50.188:8080//video"
@@ -75,11 +100,24 @@ button2.pack(side=tk.LEFT, padx=10)
 # 创建按钮3
 button3 = tk.Button(root, text="重置", command=lambda: reset())
 button3.pack(side=tk.LEFT, padx=10)
+
+laser_phi = tk.Label(root, text="波长:")
+laser_phi.pack(side=tk.LEFT, padx=10)
+phi_entry = tk.Entry(root)
+phi_entry.pack(side=tk.LEFT, padx=10)
+laser_width = tk.Label(root, text="宽度:")
+laser_width.pack(side=tk.LEFT, padx=10)
+width_entry = tk.Entry(root)
+width_entry.pack(side=tk.LEFT, padx=10)
+laser_alpha = tk.Label(root, text="强度:")
+laser_alpha.pack(side=tk.LEFT, padx=10)
+alpha_entry = tk.Entry(root)
+alpha_entry.pack(side=tk.LEFT, padx=10)
+# 创建按钮4
+button4 = tk.Button(root, text="设置", command=lambda: update_setting())
+button4.pack(side=tk.LEFT, padx=10)
 root.mainloop()
 
-# 创建一个label框用于显示信息
-label = tk.Label(root, text="Hello World!")
-label.pack(side=tk.LEFT, padx=10)
 # 释放视频捕捉对象和窗口
 cap.release()
 cv2.destroyAllWindows()
