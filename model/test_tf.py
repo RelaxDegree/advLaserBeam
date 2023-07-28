@@ -2,7 +2,6 @@
     made by zyh, 2023.7.11
     input a label and an image, output a list of score and label, or 0 if not found
 """
-import tensorflow as tf
 from tensorflow.keras.applications.resnet50 import ResNet50
 from tensorflow.keras.applications.mobilenet_v2 import MobileNetV2, preprocess_input, decode_predictions
 from tensorflow.keras.preprocessing import image

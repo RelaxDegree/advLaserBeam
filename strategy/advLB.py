@@ -14,7 +14,7 @@ from util.utils import write_log
 
 image_root = 'valdata/'
 log_root = 'log.csv'
-threshold = 0.0
+threshold = 0.05
 
 
 def advLB(image, S, tmax=500, k=200):

@@ -33,8 +33,9 @@ def makeLB(vector, image):
     end_point = (image_width, int(vector.b + math.tan(vector.l) * image_width))
     overlay = Image.new('RGBA', image.size, (0, 0, 0, 0))
     draw = ImageDraw.Draw(overlay)  # Create a context for drawing things on it.
-
-    draw.line([start_point, end_point], fill=wavelength_to_rgb(vector.phi) + (int(vector.alpha * 255),),
+    color = wavelength_to_rgb(vector.phi)
+    color_new = (int(color[0] * 255), int(color[1] * 255), int(color[2] * 255))
+    draw.line([start_point, end_point], fill=color_new + (int(vector.alpha * 255),),
               width=int(vector.w))
     overlay = trans_image(overlay, vector)
     overlay = overlay.filter(ImageFilter.GaussianBlur(radius=1))
@@ -43,7 +44,6 @@ def makeLB(vector, image):
     result = result.convert("RGB")
 
     return result
-
 
 #
 # image = Image.open(root + 'n0153282900000938.jpg')

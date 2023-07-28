@@ -3,7 +3,7 @@ import math
 from PIL import Image
 import cv2
 from util.utils import *
-# from theta import Vector
+
 root = '../valdata/'
 
 
@@ -80,11 +80,13 @@ def makeLB(vector, image):
     result = Image.fromarray(np.uint8(img_with_light))
 
     return result
-# image = Image.open(root + 'n0427554800000103.jpg')
+
+
+# image = Image.open(root + 'n0153282900000157.jpg')
 # theta = Vector(image)
 # theta.alpha = 0.8
 # theta.b = 110
 # theta.phi = 400
-# theta.l = math.pi/3
+# theta.l = math.pi / 3
 # im = makeLB(theta, image)
 # im.show()

@@ -5,8 +5,8 @@ from PIL import Image
 import PIL
 
 phi = 445
-w = 26
-alpha = 0.7
+w = 30
+alpha = 1.0
 
 
 def set_laser(phi_, w_, alpha_):

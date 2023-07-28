@@ -1,7 +1,7 @@
 import os
 import random
 from util.utils import pc_toast
-from strategy.advLB import advLB
+from strategy.particle import advLB
 from PIL import Image
 
 
@@ -42,4 +42,4 @@ def testOne(root):
 
 
 # testOne('highscore')
-testAll(10, 'valdata')
+testAll(1, 'valdata')

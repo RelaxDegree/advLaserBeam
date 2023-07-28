@@ -7,8 +7,7 @@ from model.test_tf import get_conf
 from strategy.particle import advLB
 
 root = 'adv/'
-path = 'test.jpg'
-
+filename = 'ant__0.9999261.jpg'
 
 def pc_toast():
     toaster = ToastNotifier()
@@ -23,6 +22,6 @@ def pc_toast():
 
 
 # for i in range(100):
-img = Image.open(path)
+img = Image.open(root + filename)
 print(get_conf(img))
 theta, atk_times = advLB(img, 40, 20, 100)

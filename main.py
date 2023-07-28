@@ -1,17 +1,15 @@
 import tkinter as tk
-from tkinter import PhotoImage
-import cv2
-from PIL import Image, ImageTk
+from PIL import ImageTk
 from tkinter import messagebox
-import time
 from model.test_tf import get_conf
 from strategy.particle import advLB
-from util.utils import pc_toast
 from laserBeam.super_simulation import *
 from laserBeam.theta_constraint import set_laser
 
 img = None
 
+
+# 510 绿色 750 红色  440 蓝色 415 紫色
 
 def show_image_window(image, text):
     # 创建新的Toplevel窗口
@@ -26,6 +24,7 @@ def show_image_window(image, text):
 
 
 def adv():
+    update_setting()
     global img
     root.after_cancel(update_frame.timer_id)
     theta, atk_times = advLB(img, 40, 20, 100)
@@ -42,9 +41,11 @@ def adv():
 
 def val():
     print(get_conf(img))
-    show_image_window(img,"测试图片")
+    show_image_window(img, "测试图片")
+
 
 def reset():
+    root.after_cancel(update_frame.timer_id)
     global cap
     cap = cv2.VideoCapture(url)
     update_frame()
@@ -69,7 +70,7 @@ def update_setting():
     if phi_entry.get() == '' or width_entry.get() == '' or alpha_entry.get() == '':
         messagebox.showwarning("警告", "请输入参数")
         return
-    set_laser(phi_entry.get(), width_entry.get(), alpha_entry.get())
+    set_laser(float(phi_entry.get()), float(width_entry.get()), float(alpha_entry.get()))
 
 
 url = "http://192.168.50.188:8080//video"
@@ -103,19 +104,16 @@ button3.pack(side=tk.LEFT, padx=10)
 
 laser_phi = tk.Label(root, text="波长:")
 laser_phi.pack(side=tk.LEFT, padx=10)
-phi_entry = tk.Entry(root)
+phi_entry = tk.Entry(root, textvariable=tk.StringVar(value='425'))
 phi_entry.pack(side=tk.LEFT, padx=10)
 laser_width = tk.Label(root, text="宽度:")
 laser_width.pack(side=tk.LEFT, padx=10)
-width_entry = tk.Entry(root)
+width_entry = tk.Entry(root, textvariable=tk.StringVar(value='30'))
 width_entry.pack(side=tk.LEFT, padx=10)
 laser_alpha = tk.Label(root, text="强度:")
 laser_alpha.pack(side=tk.LEFT, padx=10)
-alpha_entry = tk.Entry(root)
+alpha_entry = tk.Entry(root, textvariable=tk.StringVar(value='1.0'))
 alpha_entry.pack(side=tk.LEFT, padx=10)
-# 创建按钮4
-button4 = tk.Button(root, text="设置", command=lambda: update_setting())
-button4.pack(side=tk.LEFT, padx=10)
 root.mainloop()
 
 # 释放视频捕捉对象和窗口
