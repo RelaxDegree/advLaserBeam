@@ -58,7 +58,7 @@ def update_frame():
         return
     global img
     img = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
-    img = img.resize((1152, 648), Image.ANTIALIAS)
+    img = img.resize((1152, 648), Image.LANCZOS)
     photo = ImageTk.PhotoImage(image=img)
     video_label.configure(image=photo)
     video_label.image = photo
@@ -73,7 +73,7 @@ def update_setting():
     set_laser(float(phi_entry.get()), float(width_entry.get()), float(alpha_entry.get()))
 
 
-url = "http://192.168.50.188:8080//video"
+url = "http://192.168.43.1:8080//video"
 
 # 创建视频捕捉对象
 cap = cv2.VideoCapture(url)
